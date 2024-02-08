@@ -8,6 +8,10 @@ import lombok.Setter;
 
 import java.util.List;
 
+/**
+ * The Deck class represents a deck of playing cards.
+ * It has a unique ID and a list of cards that are currently in deck.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

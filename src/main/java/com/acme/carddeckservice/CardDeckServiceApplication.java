@@ -3,6 +3,9 @@ package com.acme.carddeckservice;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * The CardDeckServiceApplication class is the entry point for the Card Deck Service application.
+ */
 @SpringBootApplication
 public class CardDeckServiceApplication {
 

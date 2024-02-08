@@ -7,12 +7,19 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * The ErrorResponse class represents an error response.
+ */
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 public class ErrorResponse {
+
+    @JsonProperty("error_code")
+    private String errorCode;
 
     @JsonProperty("error_type")
     private String type;

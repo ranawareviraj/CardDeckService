@@ -1,6 +1,6 @@
 package com.acme.carddeckservice.service;
 
-import com.acme.carddeckservice.Constants;
+import com.acme.carddeckservice.utils.Constants;
 import com.acme.carddeckservice.error.InvalidInputException;
 import com.acme.carddeckservice.error.NotFoundException;
 import com.acme.carddeckservice.model.Card;
@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * The CardDeckService class is a service class that provides methods to create, get, shuffle, deal and return cards to a deck.
+ */
 @Service
 public class CardDeckService {
     private static final Map<String, Deck> decks = new ConcurrentHashMap<>();
@@ -46,9 +49,6 @@ public class CardDeckService {
     }
 
     public void returnCard(String deckId, Card card) {
-        if (decks.get(deckId).getCards().contains(card)) {
-            throw new IllegalArgumentException("Card already in deck");
-        }
         decks.get(deckId).getCards().add(card);
     }
 
@@ -75,12 +75,16 @@ public class CardDeckService {
             throw new InvalidInputException("Card cannot be null or empty");
         }
 
+        if (card.getSuit() == null || card.getRank() == null) {
+            throw new InvalidInputException("Invalid card - suit and rank must be provided");
+        }
+
         if (card.getSuit().isEmpty() || card.getSuit().isBlank()) {
-            throw new InvalidInputException("Invalid card - suit cannot be null or empty");
+            throw new InvalidInputException("Invalid card - suit cannot be empty");
         }
 
         if (card.getRank().isEmpty() || card.getRank().isBlank()) {
-            throw new InvalidInputException("Invalid card - rank cannot be null or empty");
+            throw new InvalidInputException("Invalid card - rank cannot be empty");
         }
 
         if (!Constants.SUITS.contains(card.getSuit())) {
