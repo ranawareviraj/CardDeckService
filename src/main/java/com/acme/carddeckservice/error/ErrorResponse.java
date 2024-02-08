@@ -9,6 +9,8 @@ import lombok.Setter;
 
 /**
  * The ErrorResponse class represents an error response.
+ *
+ * @author Viraj Ranaware
  */
 
 @Data

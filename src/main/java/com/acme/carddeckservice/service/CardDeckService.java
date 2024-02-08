@@ -12,7 +12,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * The CardDeckService class is a service class that provides methods to create, get, shuffle, deal and return cards to a deck.
+ * The CardDeckService class is a service class that provides methods
+ * to create, get, shuffle, deal and return cards to a deck.
+ * It also provides methods to get all decks and deck IDs.
+ *
+ * @author Viraj Ranaware
  */
 @Service
 public class CardDeckService {

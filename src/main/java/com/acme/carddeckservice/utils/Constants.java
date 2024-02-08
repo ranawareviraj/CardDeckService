@@ -4,6 +4,8 @@ import java.util.Set;
 
 /**
  * The Constants class contains the constants used in the application.
+ *
+ * @author Viraj Ranaware
  */
 public class Constants {
     public static final Set<String> SUITS = Set.of("Hearts", "Diamonds", "Clubs", "Spades");

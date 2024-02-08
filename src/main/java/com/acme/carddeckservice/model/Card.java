@@ -10,6 +10,8 @@ import lombok.EqualsAndHashCode;
 
 /**
  * The Card class represents a playing card, which has a suit and a rank.
+ *
+ * @author Viraj Ranaware
  */
 @Data
 @NoArgsConstructor

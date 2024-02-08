@@ -1,5 +1,6 @@
 package com.acme.carddeckservice.controller;
 
+import com.acme.carddeckservice.error.ErrorResponse;
 import com.acme.carddeckservice.error.InvalidInputException;
 import com.acme.carddeckservice.error.NotFoundException;
 import com.acme.carddeckservice.error.UnknownServerException;
@@ -9,19 +10,16 @@ import com.acme.carddeckservice.service.CardDeckService;
 import com.acme.carddeckservice.utils.Constants;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 /**
  * The CardDeckController class is a RESTful web service controller.
  * It handles requests related to card decks.
+ *
+ * @author Viraj Ranaware
  */
 
 @RestController
@@ -80,12 +78,12 @@ public class CardDeckController {
     }
 
     /**
-     * Deal a card from a deck
+     * Deals a card from a deck
      *
      * @param deckId The unique ID of the deck
      * @return Card The card object
+     * @throws InvalidInputException, NotFoundException, UnknownServerException
      */
-
     @GetMapping("/{deckId}/deal")
     public ResponseEntity<Card> dealCard(@PathVariable String deckId) {
         try {
@@ -101,10 +99,15 @@ public class CardDeckController {
     }
 
     /**
-     * Return a card to a deck
+     * Returns a card to a deck if it is a valid card and not already in the deck
      *
      * @param deckId The unique ID of the deck
      * @param card   The card object
+     * @return ResponseEntity
+     * @throws InvalidInputException           The input is not valid. The card is null, empty or already in the deck.
+     * @throws NotFoundException               The requested resource (Card or Deck) is not found.
+     * @throws UnknownServerException          Internal server error.
+     * @throws HttpMessageNotReadableException The request body is missing or invalid.
      */
     @PostMapping("/{deckId}/cards")
     public ResponseEntity<Object> returnCard(@PathVariable String deckId, @RequestBody Card card) {
@@ -124,9 +127,12 @@ public class CardDeckController {
     }
 
     /**
-     * Shuffle a deck
+     * Shuffles a deck
      *
      * @param deckId The unique ID of the deck
+     * @throws InvalidInputException  The input is not valid. The deck ID is null or empty.
+     * @throws NotFoundException      The requested deck is not found or is empty.
+     * @throws UnknownServerException Internal server error.
      */
     @GetMapping("/{deckId}/shuffle")
     public ResponseEntity<Object> shuffleDeck(@PathVariable String deckId) {
@@ -143,6 +149,13 @@ public class CardDeckController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    /**
+     * Validate deck ID
+     *
+     * @param deckId The unique ID of the deck
+     * @throws InvalidInputException The input is not valid. The deck ID is null or empty.
+     * @throws NotFoundException     The requested deck is not found or is empty.
+     */
     public void validateDeckId(String deckId) throws InvalidInputException, NotFoundException {
         if (deckId.isEmpty() || deckId.isBlank()) {
             throw new InvalidInputException("Deck id not valid");
@@ -153,6 +166,14 @@ public class CardDeckController {
         }
     }
 
+    /**
+     * Validate card
+     *
+     * @param card   The card object
+     * @param deckId The unique ID of the deck
+     * @throws InvalidInputException The input is not valid. The card is null, empty or already in the deck.
+     * @throws NotFoundException     The requested resource (Card or Deck) is not found.
+     */
     public void validateCard(Card card, String deckId) throws InvalidInputException, NotFoundException {
         if (card == null) {
             throw new InvalidInputException("Card cannot be null or empty");
@@ -191,4 +212,18 @@ public class CardDeckController {
         }
     }
 
+    /**
+     * Handle missing request body
+     *
+     * @return ResponseEntity
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleMissingRequestBody() {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setErrorCode(HttpStatus.BAD_REQUEST.toString());
+        errorResponse.setType(Constants.INVALID_REQUEST);
+        errorResponse.setMessage("Invalid input - request body is missing or invalid");
+        errorResponse.setTimestamp(System.currentTimeMillis());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
 }

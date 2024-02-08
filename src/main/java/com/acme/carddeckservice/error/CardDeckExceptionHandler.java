@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 /**
  * The CardDeckExceptionHandler class is a global exception handler for the CardDeckService application.
  * It handles exceptions thrown by the CardDeckController.
+ *
+ * @author Viraj Ranaware
  */
 @ControllerAdvice
 public class CardDeckExceptionHandler {
@@ -29,7 +31,7 @@ public class CardDeckExceptionHandler {
     }
 
     /**
-     * Handle InvalidInputException
+     * Handles InvalidInputException and returns an ErrorResponse containing the error details.
      * @param e InvalidInputException
      * @return ErrorResponse
      */
