@@ -1,6 +1,10 @@
 package com.acme.carddeckservice.model;
 
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
@@ -13,4 +17,3 @@ public class Deck {
     private String id;
     private List<Card> cards;
 }
-

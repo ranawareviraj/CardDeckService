@@ -1,5 +1,6 @@
 package com.acme.carddeckservice.controller;
 
+import com.acme.carddeckservice.model.Card;
 import com.acme.carddeckservice.model.Deck;
 import com.acme.carddeckservice.service.CardDeckService;
 import org.springframework.web.bind.annotation.*;
@@ -21,21 +22,21 @@ public class CardDeckController {
 
     @GetMapping("/{deckId}")
     public Deck getDeck(@PathVariable String deckId) {
-        return CardDeckService.getDeck(deckId);
+        return cardDeckService.getDeck(deckId);
     }
 
-    @PostMapping("/{deckId}/deal")
-    public void dealCard(@PathVariable String deckId) {
-        // TODO: Implement dealing logic
+    @GetMapping("/{deckId}/deal")
+    public Card dealCard(@PathVariable String deckId) {
+        return cardDeckService.dealCard(deckId);
     }
 
     @PostMapping("/{deckId}/return")
-    public void returnCard(@PathVariable String deckId) {
-        // TODO: Implement returning logic
+    public Card returnLastCard(@PathVariable String deckId) {
+        return cardDeckService.returnLastCard(deckId);
     }
 
-    @PostMapping("/{deckId}/shuffle")
+    @GetMapping("/{deckId}/shuffle")
     public void shuffleDeck(@PathVariable String deckId) {
-        // TODO: Implement shuffling logic
+        cardDeckService.shuffleDeck(deckId);
     }
 }
