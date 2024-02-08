@@ -2,6 +2,7 @@ package com.acme.carddeckservice.controller;
 
 import com.acme.carddeckservice.error.InvalidInputException;
 import com.acme.carddeckservice.error.NotFoundException;
+import com.acme.carddeckservice.error.UnknownServerException;
 import com.acme.carddeckservice.model.Card;
 import com.acme.carddeckservice.model.Deck;
 import com.acme.carddeckservice.service.CardDeckService;
@@ -41,7 +42,11 @@ public class CardDeckController {
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
     public List<String> getAllDeckIds() {
-        return cardDeckService.getAllDeckIds();
+        List<String> decks = cardDeckService.getAllDeckIds();
+        if (decks.isEmpty()) {
+            throw new NotFoundException("No decks found");
+        }
+        return decks;
     }
 
     /**
@@ -50,7 +55,6 @@ public class CardDeckController {
      * @return Deck object
      */
     @GetMapping("/new")
-    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Deck> createDeck() {
         return ResponseEntity.status(HttpStatus.CREATED).body(cardDeckService.createDeck());
     }
@@ -63,7 +67,15 @@ public class CardDeckController {
      */
     @GetMapping("/{deckId}")
     public ResponseEntity<Deck> getDeck(@PathVariable String deckId) {
-        validateDeckId(deckId);
+        try {
+            validateDeckId(deckId);
+        } catch (InvalidInputException e) {
+            throw new InvalidInputException(e.getMessage());
+        } catch (NotFoundException e) {
+            throw new NotFoundException(e.getMessage());
+        } catch (Exception ex) {
+            throw new UnknownServerException("Internal server error occurred. Please try again later.");
+        }
         return ResponseEntity.status(HttpStatus.OK).body(cardDeckService.getDeck(deckId));
     }
 
@@ -76,7 +88,15 @@ public class CardDeckController {
 
     @GetMapping("/{deckId}/deal")
     public ResponseEntity<Card> dealCard(@PathVariable String deckId) {
-        validateDeckId(deckId);
+        try {
+            validateDeckId(deckId);
+        } catch (InvalidInputException e) {
+            throw new InvalidInputException(e.getMessage());
+        } catch (NotFoundException e) {
+            throw new NotFoundException(e.getMessage());
+        } catch (Exception ex) {
+            throw new UnknownServerException("Internal server error occurred. Please try again later.");
+        }
         return ResponseEntity.status(HttpStatus.OK).body(cardDeckService.dealCard(deckId));
     }
 
@@ -87,11 +107,20 @@ public class CardDeckController {
      * @param card   The card object
      */
     @PostMapping("/{deckId}/cards")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void returnCard(@PathVariable String deckId, @RequestBody Card card) {
-        validateDeckId(deckId);
-        validateCard(card, deckId);
-        cardDeckService.returnCard(deckId, card);
+    public ResponseEntity<Object> returnCard(@PathVariable String deckId, @RequestBody Card card) {
+        try {
+            validateDeckId(deckId);
+            validateCard(card, deckId);
+            cardDeckService.returnCard(deckId, card);
+        } catch (InvalidInputException e) {
+            throw new InvalidInputException(e.getMessage());
+        } catch (NotFoundException e) {
+            throw new NotFoundException(e.getMessage());
+        } catch (Exception ex) {
+            throw new UnknownServerException("Internal server error occurred. Please try again later.");
+        }
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     /**
@@ -100,9 +129,18 @@ public class CardDeckController {
      * @param deckId The unique ID of the deck
      */
     @GetMapping("/{deckId}/shuffle")
-    public void shuffleDeck(@PathVariable String deckId) {
-        validateDeckId(deckId);
-        cardDeckService.shuffleDeck(deckId);
+    public ResponseEntity<Object> shuffleDeck(@PathVariable String deckId) {
+        try {
+            validateDeckId(deckId);
+            cardDeckService.shuffleDeck(deckId);
+        } catch (InvalidInputException e) {
+            throw new InvalidInputException(e.getMessage());
+        } catch (NotFoundException e) {
+            throw new NotFoundException(e.getMessage());
+        } catch (Exception ex) {
+            throw new UnknownServerException("Internal server error occurred. Please try again later.");
+        }
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     public void validateDeckId(String deckId) throws InvalidInputException, NotFoundException {
