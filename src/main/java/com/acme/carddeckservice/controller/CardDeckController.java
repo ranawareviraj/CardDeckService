@@ -1,6 +1,5 @@
 package com.acme.carddeckservice.controller;
 
-import com.acme.carddeckservice.error.ErrorResponse;
 import com.acme.carddeckservice.error.InvalidInputException;
 import com.acme.carddeckservice.error.NotFoundException;
 import com.acme.carddeckservice.error.UnknownServerException;
@@ -8,6 +7,7 @@ import com.acme.carddeckservice.model.Card;
 import com.acme.carddeckservice.model.Deck;
 import com.acme.carddeckservice.service.CardDeckService;
 import com.acme.carddeckservice.utils.Constants;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -22,9 +22,10 @@ import java.util.List;
  * @author Viraj Ranaware
  */
 
+
 @RestController
 @RequestMapping("/api/cards-service/decks")
-public class CardDeckController {
+public class CardDeckController implements CardDeckAPI {
 
     CardDeckService cardDeckService;
 
@@ -40,6 +41,7 @@ public class CardDeckController {
      * If provided, it will be also be returned in the response header.
      */
     @GetMapping()
+    @Override
     public ResponseEntity<List<String>> getAllDeckIds(@RequestHeader(value = "X-Request-ID", required = false) String requestId) {
         List<String> decks = cardDeckService.getAllDeckIds();
         if (decks.isEmpty()) {
@@ -58,7 +60,9 @@ public class CardDeckController {
      * @header X-Request-ID Optional unique ID of the request.
      * If provided, it will be also be returned in the response header.
      */
+
     @GetMapping("/new")
+    @Override
     public ResponseEntity<Deck> createDeck(@RequestHeader(value = "X-Request-ID", required = false) String requestId) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .header("X-Request-ID", requestId)
@@ -105,16 +109,16 @@ public class CardDeckController {
     @GetMapping("/{deckId}/deal")
     public ResponseEntity<Card> dealCard(@PathVariable String deckId,
                                          @RequestHeader(value = "X-Request-ID", required = false) String requestId) {
-//        try {
-            validateDeckId(deckId);
-            validateDeckState(deckId);
-//        } catch (InvalidInputException e) {
-//            throw new InvalidInputException(e.getMessage());
-//        } catch (NotFoundException e) {
-//            throw new NotFoundException(e.getMessage());
-//        } catch (Exception ex) {
-//            throw new UnknownServerException("Internal server error occurred. Please try again later.");
-//        }
+        try {
+        validateDeckId(deckId);
+        validateDeckState(deckId);
+        } catch (InvalidInputException e) {
+            throw new InvalidInputException(e.getMessage());
+        } catch (NotFoundException e) {
+            throw new NotFoundException(e.getMessage());
+        } catch (Exception ex) {
+            throw new UnknownServerException("Internal server error occurred. Please try again later.");
+        }
         return ResponseEntity.status(HttpStatus.OK)
                 .header("X-Request-ID", requestId)
                 .body(cardDeckService.dealCard(deckId));
@@ -134,7 +138,7 @@ public class CardDeckController {
      * If provided, it will be also be returned in the response header.
      */
     @PostMapping("/{deckId}/cards")
-    public ResponseEntity<Object> returnCard(@PathVariable String deckId, @RequestBody Card card,
+    public ResponseEntity<Void> returnCard(@PathVariable String deckId, @RequestBody @Valid Card card,
                                              @RequestHeader(value = "X-Request-ID", required = false) String requestId) {
         try {
             validateDeckId(deckId);
@@ -164,7 +168,7 @@ public class CardDeckController {
      * If provided, it will be also be returned in the response header.
      */
     @GetMapping("/{deckId}/shuffle")
-    public ResponseEntity<Object> shuffleDeck(@PathVariable String deckId,
+    public ResponseEntity<Void> shuffleDeck(@PathVariable String deckId,
                                               @RequestHeader(value = "X-Request-ID", required = false) String requestId) {
         try {
             validateDeckId(deckId);
@@ -250,20 +254,5 @@ public class CardDeckController {
         if (cardDeckService.getAllDecks().get(deckId).getCards().contains(card)) {
             throw new InvalidInputException("Card already in deck - cannot return card that is already in deck");
         }
-    }
-
-    /**
-     * Handle missing request body
-     *
-     * @return ResponseEntity
-     */
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleMissingRequestBody() {
-        ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setErrorCode(HttpStatus.BAD_REQUEST.toString());
-        errorResponse.setType(Constants.INVALID_REQUEST);
-        errorResponse.setMessage("Invalid input - request body is missing or invalid");
-        errorResponse.setTimestamp(System.currentTimeMillis());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 }

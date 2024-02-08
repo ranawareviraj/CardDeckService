@@ -3,6 +3,7 @@ package com.acme.carddeckservice.error;
 import com.acme.carddeckservice.utils.Constants;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -61,5 +62,20 @@ public class CardDeckExceptionHandler {
         errorResponse.setMessage(e.getMessage());
         errorResponse.setTimestamp(System.currentTimeMillis());
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    /**
+     * Handle missing request body
+     *
+     * @return ResponseEntity
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleMissingRequestBody() {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setErrorCode(HttpStatus.BAD_REQUEST.toString());
+        errorResponse.setType(Constants.INVALID_REQUEST);
+        errorResponse.setMessage("Invalid input - request body is missing or invalid");
+        errorResponse.setTimestamp(System.currentTimeMillis());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 }
