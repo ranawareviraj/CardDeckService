@@ -1,8 +1,6 @@
 package com.acme.carddeckservice.service;
 
 import com.acme.carddeckservice.utils.Constants;
-import com.acme.carddeckservice.error.InvalidInputException;
-import com.acme.carddeckservice.error.NotFoundException;
 import com.acme.carddeckservice.model.Card;
 import com.acme.carddeckservice.model.Deck;
 import org.springframework.stereotype.Service;
@@ -36,8 +34,8 @@ public class CardDeckService {
         return deck;
     }
 
-    public List<String> getAllDecks() {
-        return new ArrayList<>(decks.keySet());
+    public Map<String, Deck> getAllDecks() {
+        return decks;
     }
 
     public Deck getDeck(String deckId) {
@@ -60,51 +58,7 @@ public class CardDeckService {
         return decks.containsKey(deckId);
     }
 
-    public void validateDeckId(String deckId) throws InvalidInputException, NotFoundException {
-        if (deckId.isEmpty() || deckId.isBlank()) {
-            throw new InvalidInputException("Deck id not valid");
-        } else if (!deckExists(deckId)) {
-            throw new NotFoundException("Deck not found");
-        } else if (getDeck(deckId).getCards().isEmpty()) {
-            throw new NotFoundException("Deck is empty");
-        }
-    }
-
-    public void validateCard(Card card, String deckId) throws InvalidInputException, NotFoundException {
-        if (card == null) {
-            throw new InvalidInputException("Card cannot be null or empty");
-        }
-
-        if (card.getSuit() == null || card.getRank() == null) {
-            throw new InvalidInputException("Invalid card - suit and rank must be provided");
-        }
-
-        if (card.getSuit().isEmpty() || card.getSuit().isBlank()) {
-            throw new InvalidInputException("Invalid card - suit cannot be empty");
-        }
-
-        if (card.getRank().isEmpty() || card.getRank().isBlank()) {
-            throw new InvalidInputException("Invalid card - rank cannot be empty");
-        }
-
-        if (!Constants.SUITS.contains(card.getSuit())) {
-            throw new InvalidInputException(new StringBuilder()
-                    .append("Invalid suit: ")
-                    .append(card.getSuit())
-                    .append(", valid suits are Hearts, Diamonds, Clubs, Spades")
-                    .toString());
-        }
-
-        if (!Constants.RANKS.contains(card.getRank())) {
-            throw new InvalidInputException(new StringBuilder()
-                    .append("Invalid rank: ")
-                    .append(card.getRank())
-                    .append(", valid ranks are 2, 3, 4, 5, 6, 7, 8, 9, 10, Jack, Queen, King, Ace")
-                    .toString());
-        }
-
-        if (decks.get(deckId).getCards().contains(card)) {
-            throw new InvalidInputException("Card already in deck - cannot return card that is already in deck");
-        }
+    public List<String> getAllDeckIds() {
+        return new ArrayList<>(decks.keySet());
     }
 }

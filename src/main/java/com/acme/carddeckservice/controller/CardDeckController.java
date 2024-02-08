@@ -1,8 +1,11 @@
 package com.acme.carddeckservice.controller;
 
+import com.acme.carddeckservice.error.InvalidInputException;
+import com.acme.carddeckservice.error.NotFoundException;
 import com.acme.carddeckservice.model.Card;
 import com.acme.carddeckservice.model.Deck;
 import com.acme.carddeckservice.service.CardDeckService;
+import com.acme.carddeckservice.utils.Constants;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,10 +38,10 @@ public class CardDeckController {
      *
      * @return List of all deck IDs
      */
-    @GetMapping("")
+    @GetMapping()
     @ResponseStatus(HttpStatus.OK)
-    public List<String> getAllDecks() {
-        return cardDeckService.getAllDecks();
+    public List<String> getAllDeckIds() {
+        return cardDeckService.getAllDeckIds();
     }
 
     /**
@@ -60,7 +63,7 @@ public class CardDeckController {
      */
     @GetMapping("/{deckId}")
     public ResponseEntity<Deck> getDeck(@PathVariable String deckId) {
-        cardDeckService.validateDeckId(deckId);
+        validateDeckId(deckId);
         return ResponseEntity.status(HttpStatus.OK).body(cardDeckService.getDeck(deckId));
     }
 
@@ -73,9 +76,8 @@ public class CardDeckController {
 
     @GetMapping("/{deckId}/deal")
     public ResponseEntity<Card> dealCard(@PathVariable String deckId) {
-        cardDeckService.validateDeckId(deckId);
-        cardDeckService.dealCard(deckId);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        validateDeckId(deckId);
+        return ResponseEntity.status(HttpStatus.OK).body(cardDeckService.dealCard(deckId));
     }
 
     /**
@@ -87,8 +89,8 @@ public class CardDeckController {
     @PostMapping("/{deckId}/cards")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void returnCard(@PathVariable String deckId, @RequestBody Card card) {
-        cardDeckService.validateDeckId(deckId);
-        cardDeckService.validateCard(card, deckId);
+        validateDeckId(deckId);
+        validateCard(card, deckId);
         cardDeckService.returnCard(deckId, card);
     }
 
@@ -99,8 +101,56 @@ public class CardDeckController {
      */
     @GetMapping("/{deckId}/shuffle")
     public void shuffleDeck(@PathVariable String deckId) {
-        cardDeckService.validateDeckId(deckId);
+        validateDeckId(deckId);
         cardDeckService.shuffleDeck(deckId);
+    }
+
+    public void validateDeckId(String deckId) throws InvalidInputException, NotFoundException {
+        if (deckId.isEmpty() || deckId.isBlank()) {
+            throw new InvalidInputException("Deck id not valid");
+        } else if (!cardDeckService.deckExists(deckId)) {
+            throw new NotFoundException("Deck not found");
+        } else if (cardDeckService.getDeck(deckId).getCards().isEmpty()) {
+            throw new NotFoundException("Deck is empty");
+        }
+    }
+
+    public void validateCard(Card card, String deckId) throws InvalidInputException, NotFoundException {
+        if (card == null) {
+            throw new InvalidInputException("Card cannot be null or empty");
+        }
+
+        if (card.getSuit() == null || card.getRank() == null) {
+            throw new InvalidInputException("Invalid card - suit and rank must be provided");
+        }
+
+        if (card.getSuit().isEmpty() || card.getSuit().isBlank()) {
+            throw new InvalidInputException("Invalid card - suit cannot be empty");
+        }
+
+        if (card.getRank().isEmpty() || card.getRank().isBlank()) {
+            throw new InvalidInputException("Invalid card - rank cannot be empty");
+        }
+
+        if (!Constants.SUITS.contains(card.getSuit())) {
+            throw new InvalidInputException(new StringBuilder()
+                    .append("Invalid suit: ")
+                    .append(card.getSuit())
+                    .append(", valid suits are Hearts, Diamonds, Clubs, Spades")
+                    .toString());
+        }
+
+        if (!Constants.RANKS.contains(card.getRank())) {
+            throw new InvalidInputException(new StringBuilder()
+                    .append("Invalid rank: ")
+                    .append(card.getRank())
+                    .append(", valid ranks are 2, 3, 4, 5, 6, 7, 8, 9, 10, Jack, Queen, King, Ace")
+                    .toString());
+        }
+
+        if (cardDeckService.getAllDecks().get(deckId).getCards().contains(card)) {
+            throw new InvalidInputException("Card already in deck - cannot return card that is already in deck");
+        }
     }
 
 }
