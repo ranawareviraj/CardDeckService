@@ -4,6 +4,7 @@ import com.acme.carddeckservice.model.Card;
 import com.acme.carddeckservice.model.Deck;
 import com.acme.carddeckservice.service.CardDeckService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,6 +32,7 @@ public class CardDeckController {
 
     /**
      * Get all decks
+     *
      * @return List of all deck IDs
      */
     @GetMapping("")
@@ -41,41 +43,46 @@ public class CardDeckController {
 
     /**
      * Create a new deck
+     *
      * @return Deck object
      */
     @GetMapping("/new")
     @ResponseStatus(HttpStatus.CREATED)
-    public Deck createDeck() {
-        return cardDeckService.createDeck();
+    public ResponseEntity<Deck> createDeck() {
+        return ResponseEntity.status(HttpStatus.CREATED).body(cardDeckService.createDeck());
     }
 
     /**
      * Get a deck by ID
+     *
      * @param deckId The unique ID of the deck
      * @return Deck The deck object
      */
     @GetMapping("/{deckId}")
-    public Deck getDeck(@PathVariable String deckId) {
+    public ResponseEntity<Deck> getDeck(@PathVariable String deckId) {
         cardDeckService.validateDeckId(deckId);
-        return cardDeckService.getDeck(deckId);
+        return ResponseEntity.status(HttpStatus.OK).body(cardDeckService.getDeck(deckId));
     }
 
     /**
      * Deal a card from a deck
+     *
      * @param deckId The unique ID of the deck
      * @return Card The card object
      */
 
     @GetMapping("/{deckId}/deal")
-    public Card dealCard(@PathVariable String deckId) {
+    public ResponseEntity<Card> dealCard(@PathVariable String deckId) {
         cardDeckService.validateDeckId(deckId);
-        return cardDeckService.dealCard(deckId);
+        cardDeckService.dealCard(deckId);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     /**
      * Return a card to a deck
+     *
      * @param deckId The unique ID of the deck
-     * @param card The card object
+     * @param card   The card object
      */
     @PostMapping("/{deckId}/cards")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -87,6 +94,7 @@ public class CardDeckController {
 
     /**
      * Shuffle a deck
+     *
      * @param deckId The unique ID of the deck
      */
     @GetMapping("/{deckId}/shuffle")
