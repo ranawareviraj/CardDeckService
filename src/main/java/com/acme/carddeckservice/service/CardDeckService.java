@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * The CardDeckService class is a service class that provides methods
@@ -25,7 +26,7 @@ public class CardDeckService {
 
     public Deck createDeck() {
         // Initialize deck with 52 cards
-        List<Card> cards = new ArrayList<>();
+        List<Card> cards = new CopyOnWriteArrayList<>();
         for (String suit : Constants.SUITS) {
             for (String rank : Constants.RANKS) {
                 cards.add(new Card(suit, rank));

@@ -17,6 +17,7 @@ public class CardDeckExceptionHandler {
 
     /**
      * Handle NotFoundException
+     *
      * @param e NotFoundException
      * @return ErrorResponse
      */
@@ -32,6 +33,7 @@ public class CardDeckExceptionHandler {
 
     /**
      * Handles InvalidInputException and returns an ErrorResponse containing the error details.
+     *
      * @param e InvalidInputException
      * @return ErrorResponse
      */
@@ -43,5 +45,21 @@ public class CardDeckExceptionHandler {
         errorResponse.setMessage(e.getMessage());
         errorResponse.setTimestamp(System.currentTimeMillis());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Handles Exception and returns an ErrorResponse containing the error details.
+     *
+     * @param e Exception
+     * @return ErrorResponse
+     */
+    @ExceptionHandler({UnknownServerException.class, Exception.class})
+    public ResponseEntity<ErrorResponse> handleException(Exception e) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setErrorCode(HttpStatus.INTERNAL_SERVER_ERROR.toString());
+        errorResponse.setType(Constants.INTERNAL_SERVER_ERROR);
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setTimestamp(System.currentTimeMillis());
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

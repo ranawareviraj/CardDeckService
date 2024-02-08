@@ -45,6 +45,7 @@ public class CardDeckController {
         if (decks.isEmpty()) {
             throw new NotFoundException("No decks found");
         }
+
         return ResponseEntity.status(HttpStatus.OK)
                 .header("X-Request-ID", requestId)
                 .body(decks);
@@ -77,6 +78,7 @@ public class CardDeckController {
                                         @RequestHeader(value = "X-Request-ID", required = false) String requestId) {
         try {
             validateDeckId(deckId);
+            validateDeckState(deckId);
         } catch (InvalidInputException e) {
             throw new InvalidInputException(e.getMessage());
         } catch (NotFoundException e) {
@@ -103,15 +105,16 @@ public class CardDeckController {
     @GetMapping("/{deckId}/deal")
     public ResponseEntity<Card> dealCard(@PathVariable String deckId,
                                          @RequestHeader(value = "X-Request-ID", required = false) String requestId) {
-        try {
+//        try {
             validateDeckId(deckId);
-        } catch (InvalidInputException e) {
-            throw new InvalidInputException(e.getMessage());
-        } catch (NotFoundException e) {
-            throw new NotFoundException(e.getMessage());
-        } catch (Exception ex) {
-            throw new UnknownServerException("Internal server error occurred. Please try again later.");
-        }
+            validateDeckState(deckId);
+//        } catch (InvalidInputException e) {
+//            throw new InvalidInputException(e.getMessage());
+//        } catch (NotFoundException e) {
+//            throw new NotFoundException(e.getMessage());
+//        } catch (Exception ex) {
+//            throw new UnknownServerException("Internal server error occurred. Please try again later.");
+//        }
         return ResponseEntity.status(HttpStatus.OK)
                 .header("X-Request-ID", requestId)
                 .body(cardDeckService.dealCard(deckId));
@@ -192,7 +195,11 @@ public class CardDeckController {
             throw new InvalidInputException("Deck id not valid");
         } else if (!cardDeckService.deckExists(deckId)) {
             throw new NotFoundException("Deck not found");
-        } else if (cardDeckService.getDeck(deckId).getCards().isEmpty()) {
+        }
+    }
+
+    public void validateDeckState(String deckId) throws NotFoundException {
+        if (cardDeckService.getDeck(deckId).getCards().isEmpty()) {
             throw new NotFoundException("Deck is empty");
         }
     }
