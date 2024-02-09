@@ -1,0 +1,175 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+  - url: http://161.35.189.144:3000
+    description: Generated server url
+tags:
+  - name: CardDeckService
+    description: |
+      The CardDeckService provides essential functionality for managing decks of cards in online card games.
+      This service enables the creation, retrieval, shuffling, dealing, and returning of cards to and from decks.
+paths:
+  /api/cards-service/decks/{deckId}/cards:
+    post:
+      tags:
+        - CardDeckService
+      summary: Return a card
+      description: Returns a card to a deck by deckID.
+      operationId: returnCard
+      parameters:
+        - name: deckId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-Request-ID
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Card'
+        required: true
+      responses:
+        '200':
+          description: Successfully returned a card
+        '404':
+          description: Deck not found
+  /api/cards-service/decks:
+    get:
+      tags:
+        - CardDeckService
+      summary: Fetch all decks
+      description: Fetches all deckIDs of all available decks.
+      operationId: getAllDeckIds
+      parameters:
+        - name: X-Request-ID
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully fetched all deckIDs
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
+  /api/cards-service/decks/{deckId}:
+    get:
+      tags:
+        - CardDeckService
+      summary: Fetch a deck
+      description: Fetches a deck of cards by deckID.
+      operationId: getDeck
+      parameters:
+        - name: deckId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-Request-ID
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully fetched the deck
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Deck'
+  /api/cards-service/decks/{deckId}/shuffle:
+    get:
+      tags:
+        - CardDeckService
+      summary: Shuffle a deck
+      description: Shuffles a deck of cards by deckID.
+      operationId: shuffleDeck
+      parameters:
+        - name: deckId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-Request-ID
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully shuffled the deck
+        '404':
+          description: Deck not found
+  /api/cards-service/decks/{deckId}/deal:
+    get:
+      tags:
+        - CardDeckService
+      summary: Deal a card
+      description: Deals a card from a deck by deckID.
+      operationId: dealCard
+      parameters:
+        - name: deckId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-Request-ID
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully dealt a card
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Card'
+  /api/cards-service/decks/new:
+    get:
+      tags:
+        - CardDeckService
+      summary: Create a new deck
+      description: Creates a new deck of cards and returns the deckID.
+      operationId: createDeck
+      parameters:
+        - name: X-Request-ID
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Successfully created a new deck
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Deck'
+components:
+  schemas:
+    Card:
+      type: object
+      properties:
+        suit:
+          type: string
+        rank:
+          type: string
+    Deck:
+      type: object
+      properties:
+        id:
+          type: string
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'

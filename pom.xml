@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.acme</groupId>
     <artifactId>card-deck-service</artifactId>
-    <version>0.0.3-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>card-deck-service</name>
     <description>card-deck-service</description>
     <packaging>jar</packaging>
