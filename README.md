@@ -95,4 +95,4 @@ Alternatively, you can run the application using the jar available in the resour
 - The service does not support custom decks. It only supports standard 52-card decks. To support custom decks, the service needs code/configuration changes.
 - The service is not complete and has room for improvement. It is a basic implementation to demonstrate the essential functionality of managing decks of cards.
 - The service does not have any security features. It is an open service, and anyone can access the APIs.
-- This is a basic implementation, and it does not have any error handling or validation to check the input parameters. Not all validations are documented in the API specification. The specification only has the happy path scenarios mostly with few error cases.
+- This is a basic implementation, and it does not have extensive error handling, though it supports some input validation, as well as validations on resource requested. Not all validations are documented in the API specification. The specification only has the happy path scenarios mostly with few error cases.
