@@ -29,7 +29,7 @@ class CardDeckServiceTest {
     @Test
     void createDeck() {
         CardDeckService cardDeckService = new CardDeckService();
-        Deck deck = cardDeckService.createDeck();
+        Deck deck = cardDeckService.createNewDeck();
         assertNotNull(deck);
         assertEquals(52, deck.getCards().size());
     }
@@ -37,7 +37,7 @@ class CardDeckServiceTest {
     @Test
     void getAllDecks() {
         CardDeckService cardDeckService = new CardDeckService();
-        cardDeckService.createDeck();
+        cardDeckService.createNewDeck();
         Map<String, Deck> decks = cardDeckService.getAllDecks();
         assertNotNull(decks);
         assertEquals(1, decks.size());
@@ -46,7 +46,7 @@ class CardDeckServiceTest {
     @Test
     void getDeck() {
         CardDeckService cardDeckService = new CardDeckService();
-        Deck deck = cardDeckService.createDeck();
+        Deck deck = cardDeckService.createNewDeck();
         Deck fetchedDeck = cardDeckService.getDeck(deck.getId());
         assertNotNull(fetchedDeck);
         assertEquals(deck.getId(), fetchedDeck.getId());
@@ -55,7 +55,7 @@ class CardDeckServiceTest {
     @Test
     void dealCard() {
         CardDeckService cardDeckService = new CardDeckService();
-        Deck deck = cardDeckService.createDeck();
+        Deck deck = cardDeckService.createNewDeck();
         Card card = cardDeckService.dealCard(deck.getId());
         assertNotNull(card);
         assertEquals(51, deck.getCards().size());
@@ -64,7 +64,7 @@ class CardDeckServiceTest {
     @Test
     void returnCard() {
         CardDeckService cardDeckService = new CardDeckService();
-        Deck deck = cardDeckService.createDeck();
+        Deck deck = cardDeckService.createNewDeck();
         Card card = cardDeckService.dealCard(deck.getId());
         cardDeckService.returnCard(deck.getId(), card);
         assertEquals(52, deck.getCards().size());
@@ -73,7 +73,7 @@ class CardDeckServiceTest {
     @Test
     void shuffleDeck() {
         CardDeckService cardDeckService = new CardDeckService();
-        Deck deck = cardDeckService.createDeck();
+        Deck deck = cardDeckService.createNewDeck();
         List<Card> originalCards = new CopyOnWriteArrayList<>(deck.getCards());
         cardDeckService.shuffleDeck(deck.getId());
         List<Card> shuffledCards = deck.getCards();
@@ -83,14 +83,14 @@ class CardDeckServiceTest {
     @Test
     void deckExists() {
         CardDeckService cardDeckService = new CardDeckService();
-        Deck deck = cardDeckService.createDeck();
+        Deck deck = cardDeckService.createNewDeck();
         assertTrue(cardDeckService.deckExists(deck.getId()));
     }
 
     @Test
     void getAllDeckIds() {
         CardDeckService cardDeckService = new CardDeckService();
-        cardDeckService.createDeck();
+        cardDeckService.createNewDeck();
         List<String> deckIds = cardDeckService.getAllDeckIds();
         assertNotNull(deckIds);
         assertEquals(1, deckIds.size());

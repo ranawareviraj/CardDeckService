@@ -32,6 +32,7 @@ public class CardDeckController implements CardDeckAPI {
 
     public static final String X_REQUEST_ID = "X-Request-ID";
     private static final Logger LOGGER = LoggerFactory.getLogger(CardDeckController.class);
+    public static final String VALIDATING_DECK_ID_WITH_REQUEST_ID = "Validating deck ID {}, request Id: {}";
     CardDeckService cardDeckService;
 
     public CardDeckController(CardDeckService cardDeckService) {
@@ -49,14 +50,12 @@ public class CardDeckController implements CardDeckAPI {
     @Override
     public ResponseEntity<List<String>> getAllDeckIds(@RequestHeader(value = X_REQUEST_ID, required = false) String requestId) {
         requestId = requestId == null ? UUID.randomUUID().toString() : requestId;
-        LOGGER.info("Received request to fetch all deck IDs, request Id: {}", requestId);
         List<String> decks = cardDeckService.getAllDeckIds();
         if (decks.isEmpty()) {
             LOGGER.info("No decks found, request Id: {}", requestId);
             throw new NotFoundException("No decks found");
         }
 
-        LOGGER.info("Returning all deck IDs, request Id: {}", requestId);
         return ResponseEntity.status(HttpStatus.OK)
                 .header(X_REQUEST_ID, requestId)
                 .body(decks);
@@ -74,9 +73,7 @@ public class CardDeckController implements CardDeckAPI {
     @Override
     public ResponseEntity<Deck> createDeck(@RequestHeader(value = X_REQUEST_ID, required = false) String requestId) {
         requestId = requestId == null ? UUID.randomUUID().toString() : requestId;
-        LOGGER.info("Received request to create a new deck, request Id: {}", requestId);
-        Deck deck = cardDeckService.createDeck();
-        LOGGER.info("Returning response to create a new deck request with ID {}, request Id: {}", deck.getId(), requestId);
+        Deck deck = cardDeckService.createNewDeck();
         return ResponseEntity.status(HttpStatus.CREATED)
                 .header(X_REQUEST_ID, requestId)
                 .body(deck);
@@ -95,27 +92,11 @@ public class CardDeckController implements CardDeckAPI {
     public ResponseEntity<Deck> getDeck(@PathVariable String deckId,
                                         @RequestHeader(value = X_REQUEST_ID, required = false) String requestId) {
         requestId = requestId == null ? UUID.randomUUID().toString() : requestId;
-        LOGGER.info("Received request to fetch deck for ID {}, request Id: {}", deckId, requestId);
-        try {
-            LOGGER.info("Validating deck ID {}, request Id: {}", deckId, requestId);
-            validateDeckId(deckId);
-
-            LOGGER.info("Validating deck state for deck ID {}, request Id: {}", deckId, requestId);
-            validateDeckState(deckId);
-        } catch (InvalidInputException e) {
-            LOGGER.error("Invalid input: {}, request Id: {}", e.getMessage(), requestId);
-            throw new InvalidInputException(e.getMessage());
-        } catch (NotFoundException e) {
-            LOGGER.error("Deck not found: {}, request Id: {}", deckId, requestId);
-            throw new NotFoundException(e.getMessage());
-        } catch (Exception ex) {
-            LOGGER.error("Unknown error encountered: {}, request Id: {}", ex.getMessage(), requestId);
-            throw new UnknownServerException("Internal server error occurred. Please try again later.");
-        }
-
+        LOGGER.info(VALIDATING_DECK_ID_WITH_REQUEST_ID, deckId, requestId);
+        validateDeckId(deckId);
+        LOGGER.info("Validating deck state for deck ID {}, request Id: {}", deckId, requestId);
+        validateDeckState(deckId);
         Deck deck = cardDeckService.getDeck(deckId);
-        LOGGER.info("Returning deck for ID {}, request Id: {}", deckId, requestId);
-        LOGGER.debug("Deck: {}, request Id: {}", deck.toString(), requestId);
         return ResponseEntity.status(HttpStatus.OK)
                 .header(X_REQUEST_ID, requestId)
                 .body(deck);
@@ -137,27 +118,12 @@ public class CardDeckController implements CardDeckAPI {
     public ResponseEntity<Card> dealCard(@PathVariable String deckId,
                                          @RequestHeader(value = X_REQUEST_ID, required = false) String requestId) {
         requestId = requestId == null ? UUID.randomUUID().toString() : requestId;
-        LOGGER.info("Received request to deal a card from deck {}, request Id: {}", deckId, requestId);
-        try {
-            LOGGER.info("Validating deck ID {}, request Id: {}", deckId, requestId);
-            validateDeckId(deckId);
-
-            LOGGER.info("Validating deck state for deck ID {}, request Id: {}", deckId, requestId);
-            validateDeckState(deckId);
-        } catch (InvalidInputException e) {
-            LOGGER.error("Invalid input: {}, request Id: {}", e.getMessage(), requestId);
-            throw new InvalidInputException(e.getMessage());
-        } catch (NotFoundException e) {
-            LOGGER.error("Deck not found: {}, request Id: {}", deckId, requestId);
-            throw new NotFoundException(e.getMessage());
-        } catch (Exception ex) {
-            LOGGER.error("Unknown error encountered: {}, request Id: {}", ex.getMessage(), requestId);
-            throw new UnknownServerException("Internal server error occurred. Please try again later.");
-        }
-
+        LOGGER.info(VALIDATING_DECK_ID_WITH_REQUEST_ID, deckId, requestId);
+        validateDeckId(deckId);
+        LOGGER.info("Validating deck state for deck ID {}, request Id: {}", deckId, requestId);
+        validateDeckState(deckId);
         Card card = cardDeckService.dealCard(deckId);
         LOGGER.info("Dealing a card from deck {}, request Id: {}", deckId, requestId);
-        LOGGER.debug("Returning card {}, request Id: {}", card, requestId);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .header(X_REQUEST_ID, requestId)
@@ -181,30 +147,13 @@ public class CardDeckController implements CardDeckAPI {
     @Override
     public ResponseEntity<Void> returnCard(@PathVariable String deckId, @RequestBody @Valid Card card,
                                            @RequestHeader(value = X_REQUEST_ID, required = false) String requestId) {
-        requestId = requestId == null ? UUID.randomUUID().toString() : requestId;
-        LOGGER.info("Received request to return card to deck {}, request Id: {}", deckId, requestId);
         LOGGER.debug("Card to return: {}, request Id: {}", card, requestId);
-        try {
-            LOGGER.info("Validating deck ID {}, request Id: {}", deckId, requestId);
-            validateDeckId(deckId);
-
-            LOGGER.info("Validating card, request Id: {}", requestId);
-            validateCard(card, deckId);
-            LOGGER.debug("Returning card to deck {}, request Id: {}", card, requestId);
-            cardDeckService.returnCard(deckId, card);
-        } catch (InvalidInputException e) {
-            LOGGER.error("Invalid input: {}, request Id: {}", e.getMessage(), requestId);
-            throw new InvalidInputException(e.getMessage());
-        } catch (NotFoundException e) {
-            LOGGER.error("Deck not found: {}, request Id: {}", deckId, requestId);
-            throw new NotFoundException(e.getMessage());
-        } catch (Exception ex) {
-            LOGGER.error("Unknown error encountered: {}, request Id: {}", ex.getMessage(), requestId);
-            throw new UnknownServerException("Internal server error occurred. Please try again later.");
-        }
-
-        LOGGER.info("Card returned to deck {}, request Id: {}", deckId, requestId);
-        LOGGER.debug("Card returned: {}, request Id: {}", card, requestId);
+        requestId = requestId == null ? UUID.randomUUID().toString() : requestId;
+        LOGGER.info(VALIDATING_DECK_ID_WITH_REQUEST_ID, deckId, requestId);
+        validateDeckId(deckId);
+        LOGGER.info("Validating card, request Id: {}", requestId);
+        validateCard(card, deckId);
+        cardDeckService.returnCard(deckId, card);
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .header(X_REQUEST_ID, requestId)
                 .build();
@@ -226,24 +175,8 @@ public class CardDeckController implements CardDeckAPI {
     public ResponseEntity<Void> shuffleDeck(@PathVariable String deckId,
                                             @RequestHeader(value = X_REQUEST_ID, required = false) String requestId) {
         requestId = requestId == null ? UUID.randomUUID().toString() : requestId;
-        LOGGER.info("Received request to shuffle deck {}, request Id: {}", deckId, requestId);
-        try {
-            LOGGER.info("Validating deck ID {}, request Id: {}", deckId, requestId);
-            validateDeckId(deckId);
-
-            LOGGER.info("Shuffling deck {}, request Id: {}", deckId, requestId);
-            cardDeckService.shuffleDeck(deckId);
-        } catch (InvalidInputException e) {
-            LOGGER.error("Invalid input: {}, request Id: {}", e.getMessage(), requestId);
-            throw new InvalidInputException(e.getMessage());
-        } catch (NotFoundException e) {
-            LOGGER.error("Deck not found: {}, request Id: {}", deckId, requestId);
-            throw new NotFoundException(e.getMessage());
-        } catch (Exception ex) {
-            throw new UnknownServerException("Internal server error occurred. Please try again later.");
-        }
-
-        LOGGER.info("Deck shuffled {}, request Id: {}", deckId, requestId);
+        validateDeckId(deckId);
+        cardDeckService.shuffleDeck(deckId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .header(X_REQUEST_ID, requestId)
                 .build();

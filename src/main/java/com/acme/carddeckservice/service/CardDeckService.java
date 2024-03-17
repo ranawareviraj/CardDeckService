@@ -25,7 +25,7 @@ public class CardDeckService {
     long count = 0;
 
 
-    public Deck createDeck() {
+    public Deck createNewDeck() {
         // Initialize deck with 52 cards
         List<Card> cards = new CopyOnWriteArrayList<>();
         for (String suit : Constants.SUITS) {
